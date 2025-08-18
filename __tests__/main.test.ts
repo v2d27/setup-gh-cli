@@ -6,23 +6,40 @@ import * as core from '../__fixtures__/core.js'
 
 // Create mock functions with proper typing
 const mockHttpClientInstance = {
-  getJson: jest.fn() as jest.MockedFunction<any>
+  getJson: jest.fn() as jest.MockedFunction<() => Promise<unknown>>
 }
 const MockHttpClient = jest
   .fn()
   .mockImplementation(() => mockHttpClientInstance)
 
-const mockFind = jest.fn() as jest.MockedFunction<any>
-const mockDownloadTool = jest.fn() as jest.MockedFunction<any>
-const mockExtractTar = jest.fn() as jest.MockedFunction<any>
-const mockExtractZip = jest.fn() as jest.MockedFunction<any>
-const mockCacheFile = jest.fn() as jest.MockedFunction<any>
-const mockChmodSync = jest.fn() as jest.MockedFunction<any>
+const mockFind = jest.fn() as jest.MockedFunction<
+  (toolName: string, versionSpec: string) => string
+>
+const mockDownloadTool = jest.fn() as jest.MockedFunction<
+  (url: string, dest?: string) => Promise<string>
+>
+const mockExtractTar = jest.fn() as jest.MockedFunction<
+  (file: string, dest?: string) => Promise<string>
+>
+const mockExtractZip = jest.fn() as jest.MockedFunction<
+  (file: string, dest?: string) => Promise<string>
+>
+const mockCacheFile = jest.fn() as jest.MockedFunction<
+  (
+    sourceFile: string,
+    targetFile: string,
+    tool: string,
+    version: string
+  ) => Promise<string>
+>
+const mockChmodSync = jest.fn() as jest.MockedFunction<
+  (path: string, mode: string) => void
+>
 
 // Mock os module
 const mockOs = {
-  platform: jest.fn() as jest.MockedFunction<any>,
-  arch: jest.fn() as jest.MockedFunction<any>
+  platform: jest.fn() as jest.MockedFunction<() => string>,
+  arch: jest.fn() as jest.MockedFunction<() => string>
 }
 
 // Set up module mocks

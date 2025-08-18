@@ -1,5 +1,6 @@
 name: Setup GitHub CLI
-description: Install GitHub CLI on self-hosted runners with multi-platform support
+description:
+  Install GitHub CLI on self-hosted runners with multi-platform support
 author: Hercules
 
 # Add your action's branding here. This will appear on the GitHub Marketplace.
@@ -11,29 +12,29 @@ branding:
 inputs:
   version:
     description:
-      'Version of GitHub CLI to install (without v prefix). Defaults to latest'
+      Version of GitHub CLI to install (without v prefix). Defaults to latest
     required: false
-    default: 'latest'
+    default: latest
   platform:
     description:
-      'Platform to install for (linux, darwin, windows). Defaults to current
-      platform'
+      Platform to install for (linux, darwin, windows). Defaults to current
+      platform
     required: false
   architecture:
     description:
-      'Architecture to install for (amd64, arm64, 386). Defaults to amd64'
+      Architecture to install for (amd64, arm64, 386). Defaults to amd64
     required: false
-    default: 'amd64'
+    default: amd64
   archive_format:
     description:
-      'Archive format (tar.gz for linux/darwin, zip for windows). Defaults to
-      auto-detected based on platform'
+      Archive format (tar.gz for linux/darwin, zip for windows). Defaults to
+      auto-detected based on platform
     required: false
 
 # Define your outputs here.
 outputs:
   version:
-    description: 'The version of GitHub CLI that was installed'
+    description: The version of GitHub CLI that was installed
 
 runs:
   using: node24

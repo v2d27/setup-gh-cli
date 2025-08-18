@@ -136,28 +136,36 @@ jobs:
     archive_format: 'zip'
 ```
 
+## Development
+
+### Environment Setup
+
+1. Install dependencies:
+
+   ```bash
+   npm install
+   ```
+
+2. Make sure you have Node.js 20.x or later installed
+
+### Building
+
+Package the TypeScript for distribution:
+
 ```bash
-npm install
+npm run bundle
 ```
 
-1. :building_construction: Package the TypeScript for distribution
+```bash
+$ npm test
 
-   ```bash
-   npm run bundle
-   ```
+PASS  ./index.test.js
+  ✓ throws invalid number (3ms)
+  ✓ wait 500 ms (504ms)
+  ✓ test runs (95ms)
 
-1. :white_check_mark: Run the tests
-
-   ```bash
-   $ npm test
-
-   PASS  ./index.test.js
-     ✓ throws invalid number (3ms)
-     ✓ wait 500 ms (504ms)
-     ✓ test runs (95ms)
-
-   ...
-   ```
+...
+```
 
 ## Update the Action Metadata
 
