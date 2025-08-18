@@ -1,4 +1,4 @@
-name: Setup GitHub CLI
+name: Setup GitHub CLI Actions
 description:
   Install GitHub CLI on self-hosted runners with multi-platform support
 author: Hercules
