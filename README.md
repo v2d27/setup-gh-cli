@@ -35,7 +35,7 @@ support for multiple platforms and architectures.
 ```yaml
 steps:
   - name: Setup GitHub CLI
-    uses: v2d27/setup-gh-cli@v1.1
+    uses: v2d27/setup-gh-cli@v1.2
 ```
 
 ### Advanced Usage
@@ -43,7 +43,7 @@ steps:
 ```yaml
 steps:
   - name: Setup GitHub CLI
-    uses: v2d27/setup-gh-cli@v1.1
+    uses: v2d27/setup-gh-cli@v1.2
     with:
       version: 'latest' # Optional: specify GitHub CLI version (default: latest)
 ```
