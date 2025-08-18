@@ -35,7 +35,7 @@ support for multiple platforms and architectures.
 ```yaml
 steps:
   - name: Setup GitHub CLI
-    uses: your-username/setup-gh-cli@v1
+    uses: v2d27/setup-gh-cli@v1.0
 ```
 
 ### Advanced Usage
@@ -43,7 +43,7 @@ steps:
 ```yaml
 steps:
   - name: Setup GitHub CLI
-    uses: v2d27/setup-gh-cli@v1
+    uses: v2d27/setup-gh-cli@v1.0
     with:
       version: '2.40.1' # Optional: specify version (default: latest)
       platform: 'Linux' # Optional: Linux, macOS, Windows (default: auto-detect)
@@ -75,7 +75,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Setup GitHub CLI
-        uses: v2d27/setup-gh-cli@v1
+        uses: v2d27/setup-gh-cli@v1.0
         with:
           architecture: ${{ matrix.architecture }}
 
@@ -104,14 +104,14 @@ jobs:
 
 ```yaml
 - name: Setup GitHub CLI (Latest)
-  uses: v2d27/setup-gh-cli@v1
+  uses: v2d27/setup-gh-cli@v1.0
 ```
 
 ### Install Specific Version
 
 ```yaml
 - name: Setup GitHub CLI (Specific Version)
-  uses: v2d27/setup-gh-cli@v1
+  uses: v2d27/setup-gh-cli@v1.0
   with:
     version: '2.35.0'
 ```
@@ -120,7 +120,7 @@ jobs:
 
 ```yaml
 - name: Setup GitHub CLI (ARM64)
-  uses: v2d27/setup-gh-cli@v1
+  uses: v2d27/setup-gh-cli@v1.0
   with:
     architecture: 'arm64'
 ```
@@ -129,7 +129,7 @@ jobs:
 
 ```yaml
 - name: Setup GitHub CLI (Windows)
-  uses: v2d27/setup-gh-cli@v1
+  uses: v2d27/setup-gh-cli@v1.0
   with:
     platform: 'Windows'
     architecture: 'amd64'
