@@ -72,6 +72,3 @@ export async function main(): Promise<void> {
     if (error instanceof Error) core.setFailed(error.message)
   }
 }
-
-// Run the main function to start the action
-main()

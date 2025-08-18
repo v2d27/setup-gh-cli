@@ -1719,7 +1719,7 @@ function requireTimers () {
 	return timers;
 }
 
-var main = {exports: {}};
+var main$1 = {exports: {}};
 
 var sbmh;
 var hasRequiredSbmh;
@@ -3257,7 +3257,7 @@ function requireUrlencoded () {
 var hasRequiredMain;
 
 function requireMain () {
-	if (hasRequiredMain) return main.exports;
+	if (hasRequiredMain) return main$1.exports;
 	hasRequiredMain = 1;
 
 	const WritableStream = require$$0$7.Writable;
@@ -3338,12 +3338,12 @@ function requireMain () {
 	  this._parser.write(chunk, cb);
 	};
 
-	main.exports = Busboy;
-	main.exports.default = Busboy;
-	main.exports.Busboy = Busboy;
+	main$1.exports = Busboy;
+	main$1.exports.default = Busboy;
+	main$1.exports.Busboy = Busboy;
 
-	main.exports.Dicer = Dicer;
-	return main.exports;
+	main$1.exports.Dicer = Dicer;
+	return main$1.exports;
 }
 
 var constants$3;
@@ -27247,6 +27247,97 @@ function requireCore () {
 
 var coreExports = requireCore();
 
+var libExports = requireLib();
+
+const PLATFORM_MAPPING = {
+    linux: 'linux',
+    darwin: 'macOS',
+    win32: 'windows'
+};
+const ARCH_MAPPING = {
+    x64: 'amd64',
+    arm64: 'arm64',
+    x32: '386',
+    ia32: '386'
+};
+function getPlatform() {
+    const nodePlatform = require$$0.platform();
+    const mappedPlatform = PLATFORM_MAPPING[nodePlatform];
+    if (!mappedPlatform) {
+        throw new Error(`Unsupported platform: ${nodePlatform}`);
+    }
+    return mappedPlatform;
+}
+function getArchitecture() {
+    const nodeArch = require$$0.arch();
+    const mappedArch = ARCH_MAPPING[nodeArch];
+    if (!mappedArch) {
+        throw new Error(`Unsupported architecture: ${nodeArch}`);
+    }
+    return mappedArch;
+}
+function getArchiveFormat(platform) {
+    return platform === 'windows' ? 'zip' : 'tar.gz';
+}
+/**
+ * Fetches the latest GitHub CLI release information
+ */
+async function getLatestRelease() {
+    coreExports.info('Fetching the latest GitHub CLI release information');
+    const http = new libExports.HttpClient('gh-release');
+    const response = await http.getJson('https://api.github.com/repos/cli/cli/releases/latest');
+    if (!response.result) {
+        throw new Error('Failed to fetch release information from GitHub API');
+    }
+    return response.result;
+}
+/**
+ * Finds the appropriate download URL for the specified platform and architecture
+ */
+function findAssetUrl(release, platform, architecture, archiveFormat) {
+    const expectedFileName = `gh_${release.tag_name.replace('v', '')}_${platform}_${architecture}.${archiveFormat}`;
+    const asset = release.assets.find((asset) => asset.name === expectedFileName);
+    if (!asset) {
+        coreExports.debug(`Available assets: ${release.assets.map((a) => a.name).join(', ')}`);
+        throw new Error(`No suitable asset found for platform: ${platform}, architecture: ${architecture}, format: ${archiveFormat}. Expected: ${expectedFileName}`);
+    }
+    return asset.browser_download_url;
+}
+async function getPackageLink() {
+    const versionInput = coreExports.getInput('version');
+    if (versionInput && versionInput !== 'latest') {
+        const platform = getPlatform();
+        const architecture = getArchitecture();
+        const archiveFormat = getArchiveFormat(platform);
+        const packageUrl = `https://github.com/cli/cli/releases/download/v${versionInput}/gh_${versionInput}_${platform}_${architecture}.${archiveFormat}`;
+        return {
+            platform,
+            architecture,
+            version: versionInput,
+            archiveFormat,
+            packageUrl
+        };
+    }
+    // For latest version, fetch from API and use browser_download_url
+    const release = await getLatestRelease();
+    const version = release.tag_name.startsWith('v')
+        ? release.tag_name.substring(1)
+        : release.tag_name;
+    const platform = getPlatform();
+    const architecture = getArchitecture();
+    const archiveFormat = getArchiveFormat(platform);
+    const packageUrl = findAssetUrl(release, platform, architecture, archiveFormat);
+    coreExports.info(`Latest GitHub CLI version is ${version}`);
+    coreExports.info(`Download URL: ${packageUrl}`);
+    return {
+        platform,
+        architecture,
+        version,
+        archiveFormat,
+        packageUrl
+    };
+}
+
 var toolCache = {};
 
 var manifest$1 = {exports: {}};
@@ -29817,41 +29908,44 @@ function requireToolCache () {
 
 var toolCacheExports = requireToolCache();
 
-var libExports = requireLib();
-
 const GH_CLI_TOOL_NAME = 'gh';
 /**
- * Platform mapping from Node.js os.platform() to GitHub CLI release names
+ * Install the GH CLI in self hosted runner
  */
-const PLATFORM_MAPPING = {
-    linux: 'linux',
-    darwin: 'macOS',
-    win32: 'windows'
-};
+async function install() {
+    coreExports.info('Installing GitHub CLI on self-hosted runner');
+    const pkg = await getPackageLink();
+    coreExports.info(`Platform: ${pkg.platform}`);
+    coreExports.info(`Architecture: ${pkg.architecture}`);
+    coreExports.info(`Archive format: ${pkg.archiveFormat}`);
+    coreExports.info(`Downloading GitHub CLI from ${pkg.packageUrl}`);
+    let cliPath = toolCacheExports.find(GH_CLI_TOOL_NAME, pkg.version);
+    if (cliPath) {
+        coreExports.info(`Found existing GitHub CLI at ${cliPath}`);
+        return;
+    }
+    const downloadPath = await toolCacheExports.downloadTool(pkg.packageUrl, `gh_${pkg.platform}_${pkg.architecture}`);
+    // Make the downloaded file executable on Unix-like systems
+    if (pkg.platform !== 'windows') {
+        chmodSync(downloadPath, '755');
+    }
+    // Extract the archive
+    const extractPath = pkg.archiveFormat === 'tar.gz'
+        ? await toolCacheExports.extractTar(downloadPath)
+        : await toolCacheExports.extractZip(downloadPath);
+    // Determine the binary path based on platform
+    const binaryName = pkg.platform === 'windows' ? 'gh.exe' : 'gh';
+    const binaryPath = `${extractPath}/gh_${pkg.version}_${pkg.platform}_${pkg.architecture}/bin/${binaryName}`;
+    cliPath = await toolCacheExports.cacheFile(binaryPath, binaryName, GH_CLI_TOOL_NAME, pkg.version);
+    coreExports.addPath(cliPath);
+    coreExports.setOutput('version', pkg.version);
+    coreExports.info(`GitHub CLI ${pkg.version} installed successfully`);
+}
 /**
- * Architecture mapping from Node.js os.arch() to GitHub CLI release names
+ * Main function to run the action
+ * This function is the entry point for the action and handles errors.
  */
-const ARCH_MAPPING = {
-    x64: 'amd64',
-    arm64: 'arm64',
-    x32: '386',
-    ia32: '386'
-};
-/**
- * Supported combinations of platform and architecture
- */
-const SUPPORTED_COMBINATIONS = new Set([
-    'linux-amd64',
-    'linux-arm64',
-    'linux-386',
-    'macOS-amd64',
-    'macOS-arm64',
-    'windows-amd64',
-    'windows-arm64',
-    'windows-386'
-]);
-run();
-async function run() {
+async function main() {
     try {
         await install();
     }
@@ -29860,106 +29954,11 @@ async function run() {
             coreExports.setFailed(error.message);
     }
 }
-/**
- * Get the platform name for GitHub CLI releases
- */
-function getPlatform(inputPlatform) {
-    if (inputPlatform) {
-        return inputPlatform;
-    }
-    const nodePlatform = require$$0.platform();
-    const mappedPlatform = PLATFORM_MAPPING[nodePlatform];
-    if (!mappedPlatform) {
-        throw new Error(`Unsupported platform: ${nodePlatform}`);
-    }
-    return mappedPlatform;
-}
-/**
- * Get the architecture name for GitHub CLI releases
- */
-function getArchitecture(inputArch) {
-    if (inputArch) {
-        return inputArch;
-    }
-    const nodeArch = require$$0.arch();
-    const mappedArch = ARCH_MAPPING[nodeArch];
-    if (!mappedArch) {
-        throw new Error(`Unsupported architecture: ${nodeArch}`);
-    }
-    return mappedArch;
-}
-/**
- * Get the appropriate archive format for the platform
- */
-function getArchiveFormat(platform, inputFormat) {
-    if (inputFormat) {
-        return inputFormat;
-    }
-    return platform === 'windows' ? 'zip' : 'tar.gz';
-}
-/**
- * Validate that the platform and architecture combination is supported
- */
-function validatePlatformArchCombination(platform, architecture) {
-    const combination = `${platform}-${architecture}`;
-    if (!SUPPORTED_COMBINATIONS.has(combination)) {
-        throw new Error(`Unsupported platform-architecture combination: ${combination}. ` +
-            `Supported combinations: ${Array.from(SUPPORTED_COMBINATIONS).join(', ')}`);
-    }
-}
-/**
- * Install the GH CLI in self hosted runner
- */
-async function install() {
-    coreExports.info('Installing GitHub CLI on self-hosted runner');
-    const versionInput = coreExports.getInput('version');
-    const version = !versionInput || versionInput === 'latest'
-        ? await getLatestVersion()
-        : versionInput;
-    const platform = getPlatform(coreExports.getInput('platform'));
-    const architecture = getArchitecture(coreExports.getInput('architecture'));
-    const archiveFormat = getArchiveFormat(platform, coreExports.getInput('archive_format'));
-    // Validate the combination is supported
-    validatePlatformArchCombination(platform, architecture);
-    const packageUrl = `https://github.com/cli/cli/releases/download/v${version}/gh_${version}_${platform}_${architecture}.${archiveFormat}`;
-    coreExports.info(`Platform: ${platform}`);
-    coreExports.info(`Architecture: ${architecture}`);
-    coreExports.info(`Archive format: ${archiveFormat}`);
-    coreExports.info(`Downloading GitHub CLI from ${packageUrl}`);
-    let cliPath = toolCacheExports.find(GH_CLI_TOOL_NAME, version);
-    if (!cliPath) {
-        const downloadPath = await toolCacheExports.downloadTool(packageUrl, `gh_${platform}_${architecture}`);
-        // Make the downloaded file executable on Unix-like systems
-        if (platform !== 'windows') {
-            chmodSync(downloadPath, '755');
-        }
-        // Extract the archive
-        const extractPath = archiveFormat === 'tar.gz'
-            ? await toolCacheExports.extractTar(downloadPath)
-            : await toolCacheExports.extractZip(downloadPath);
-        // Determine the binary path based on platform
-        const binaryName = platform === 'windows' ? 'gh.exe' : 'gh';
-        const binaryPath = `${extractPath}/gh_${version}_${platform}_${architecture}/bin/${binaryName}`;
-        cliPath = await toolCacheExports.cacheFile(binaryPath, binaryName, GH_CLI_TOOL_NAME, version);
-    }
-    coreExports.addPath(cliPath);
-    coreExports.setOutput('version', version);
-    coreExports.info(`GitHub CLI ${version} installed successfully`);
-}
-async function getLatestVersion() {
-    const http = new libExports.HttpClient('gh-release');
-    const response = await http.getJson('https://api.github.com/repos/cli/cli/releases/latest');
-    let latestVersion = response.result.tag_name;
-    latestVersion = latestVersion.startsWith('v')
-        ? latestVersion.substring(1)
-        : latestVersion;
-    return latestVersion;
-}
 
 /**
  * The entrypoint for the action. This file simply imports and runs the action's
  * main logic.
  */
 /* istanbul ignore next */
-run();
+main();
 //# sourceMappingURL=index.js.map
