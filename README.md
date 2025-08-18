@@ -92,3 +92,7 @@ npm run lint
 - `__tests__/` - Unit tests
 - `dist/` - Generated JavaScript (do not edit manually)
 - `action.yml` - Action metadata and input/output definitions
+
+### Contributing
+
+Please make pull request to this source code at: [https://github.com/v2d27/setup-gh-cli](https://github.com/v2d27/setup-gh-cli)
