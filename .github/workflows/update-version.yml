@@ -1,0 +1,47 @@
+name: cd
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+  workflow_call:
+    inputs:
+      version:
+        description: 'Version of package to release. Example: v1.0, v1.1,...'
+        required: true
+
+permissions:
+  contents: write
+
+jobs:
+  update-version:
+    name: Update package version
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        id: checkout
+        uses: actions/checkout@v5
+
+      - name: Bump version
+        id: bump-version
+        env:
+          NEW_VERSION: ${{ github.tags || inputs.version }}
+        run: |
+          set -euo pipefail
+
+          if [[ ! "$NEW_VERSION" =~ ^v[0-9] ]]; then # Check if NEW_VERSION starts with "v"
+            echo "ERROR: NEW_VERSION must start with 'v' (e.g., v2.5.0)" >&2
+            exit 1
+          fi
+
+          echo "Bumping version to $NEW_VERSION"  
+          sed -i -E "s/@v[0-9.]+/@${NEW_VERSION}/g" README.md
+          
+      - name: Commit changes
+        run: |
+          git config user.name "GitHub Actions"
+          git config user.email "actions@github.com"
+          git add README.md
+          git commit -m "chore: update README with new version ${{ github.tags }}"
+          git push origin HEAD:${{ github.ref }}
