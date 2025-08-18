@@ -15,21 +15,6 @@ inputs:
       Version of GitHub CLI to install (without v prefix). Defaults to latest
     required: false
     default: latest
-  platform:
-    description:
-      Platform to install for (Linux, macOS, Windows). Defaults to current
-      platform
-    required: false
-  architecture:
-    description:
-      Architecture to install for (amd64, arm64, 386). Defaults to amd64
-    required: false
-    default: amd64
-  archive_format:
-    description:
-      Archive format (tar.gz for Linux/macOS, ZIP for Windows). Defaults to
-      auto-detected based on platform
-    required: false
 
 # Define your outputs here.
 outputs:
