@@ -13,7 +13,7 @@ support for multiple platforms and architectures.
 
 - **Multi-platform support**: Linux, macOS, and Windows
 - **Multi-architecture support**: amd64, arm64, and 386 (32-bit)
-- **Automatic archive format detection**: tar.gz for Unix-like systems, zip for
+- **Automatic archive format detection**: tar.gz for Unix-like systems, ZIP for
   Windows
 - **Tool caching**: Avoids re-downloading if the same version is already cached
 - **Version flexibility**: Install latest version or specify a custom version
@@ -35,7 +35,7 @@ support for multiple platforms and architectures.
 ```yaml
 steps:
   - name: Setup GitHub CLI
-    uses: v2d27/setup-gh-cli@v1
+    uses: your-username/setup-gh-cli@v1
 ```
 
 ### Advanced Usage
@@ -46,9 +46,9 @@ steps:
     uses: v2d27/setup-gh-cli@v1
     with:
       version: '2.40.1' # Optional: specify version (default: latest)
-      platform: 'linux' # Optional: linux, macOS, windows (default: auto-detect)
+      platform: 'Linux' # Optional: Linux, macOS, Windows (default: auto-detect)
       architecture: 'arm64' # Optional: amd64, arm64, 386 (default: amd64)
-      archive_format: 'tar.gz' # Optional: tar.gz, zip (default: auto-detect)
+      archive_format: 'tar.gz' # Optional: tar.gz, ZIP (default: auto-detect)
 ```
 
 ### Cross-platform Example
@@ -88,9 +88,9 @@ jobs:
 | Input            | Description                                         | Required | Default                         |
 | ---------------- | --------------------------------------------------- | -------- | ------------------------------- |
 | `version`        | Version of GitHub CLI to install (without v prefix) | No       | `latest`                        |
-| `platform`       | Platform to install for (linux, macOS, windows)     | No       | Auto-detected                   |
+| `platform`       | Platform to install for (Linux, macOS, Windows)     | No       | Auto-detected                   |
 | `architecture`   | Architecture to install for (amd64, arm64, 386)     | No       | `amd64`                         |
-| `archive_format` | Archive format (tar.gz, zip)                        | No       | Auto-detected based on platform |
+| `archive_format` | Archive format (tar.gz, ZIP)                        | No       | Auto-detected based on platform |
 
 ## Outputs
 
@@ -131,9 +131,9 @@ jobs:
 - name: Setup GitHub CLI (Windows)
   uses: v2d27/setup-gh-cli@v1
   with:
-    platform: 'windows'
+    platform: 'Windows'
     architecture: 'amd64'
-    archive_format: 'zip'
+    archive_format: 'ZIP'
 ```
 
 ## Development

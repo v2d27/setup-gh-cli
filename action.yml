@@ -17,7 +17,7 @@ inputs:
     default: latest
   platform:
     description:
-      Platform to install for (linux, darwin, windows). Defaults to current
+      Platform to install for (Linux, macOS, Windows). Defaults to current
       platform
     required: false
   architecture:
@@ -27,7 +27,7 @@ inputs:
     default: amd64
   archive_format:
     description:
-      Archive format (tar.gz for linux/darwin, zip for windows). Defaults to
+      Archive format (tar.gz for Linux/macOS, ZIP for Windows). Defaults to
       auto-detected based on platform
     required: false
 
