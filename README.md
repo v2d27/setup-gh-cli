@@ -1,4 +1,4 @@
-# Create a GitHub Action Using TypeScript
+# Setup GitHub CLI Action
 
 [![GitHub Super-Linter](https://github.com/actions/typescript-action/actions/workflows/linter.yml/badge.svg)](https://github.com/super-linter/super-linter)
 ![CI](https://github.com/actions/typescript-action/actions/workflows/ci.yml/badge.svg)
@@ -6,52 +6,139 @@
 [![CodeQL](https://github.com/actions/typescript-action/actions/workflows/codeql-analysis.yml/badge.svg)](https://github.com/actions/typescript-action/actions/workflows/codeql-analysis.yml)
 [![Coverage](./badges/coverage.svg)](./badges/coverage.svg)
 
-Use this template to bootstrap the creation of a TypeScript action. :rocket:
+A GitHub Action to install the GitHub CLI (`gh`) on self-hosted runners with
+support for multiple platforms and architectures.
 
-This template includes compilation support, tests, a validation workflow,
-publishing, and versioning guidance.
+## Features
 
-If you are new, there's also a simpler introduction in the
-[Hello world JavaScript action repository](https://github.com/actions/hello-world-javascript-action).
+- **Multi-platform support**: Linux, macOS, and Windows
+- **Multi-architecture support**: amd64, arm64, and 386 (32-bit)
+- **Automatic archive format detection**: tar.gz for Unix-like systems, zip for
+  Windows
+- **Tool caching**: Avoids re-downloading if the same version is already cached
+- **Version flexibility**: Install latest version or specify a custom version
+- **Platform detection**: Automatically detects the runner's platform and
+  architecture
 
-## Create Your Own Action
+## Supported Platforms and Architectures
 
-To create your own action, you can use this repository as a template! Just
-follow the below instructions:
+| Platform | amd64 | arm64 | 386 |
+| -------- | ----- | ----- | --- |
+| Linux    | ✅    | ✅    | ✅  |
+| macOS    | ✅    | ✅    | ❌  |
+| Windows  | ✅    | ✅    | ✅  |
 
-1. Click the **Use this template** button at the top of the repository
-1. Select **Create a new repository**
-1. Select an owner and name for your new repository
-1. Click **Create repository**
-1. Clone your new repository
+## Usage
 
-> [!IMPORTANT]
->
-> Make sure to remove or update the [`CODEOWNERS`](./CODEOWNERS) file! For
-> details on how to use this file, see
-> [About code owners](https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners).
+### Basic Usage
 
-## Initial Setup
+```yaml
+steps:
+  - name: Setup GitHub CLI
+    uses: v2d27/setup-gh-cli@v1
+```
 
-After you've cloned the repository to your local machine or codespace, you'll
-need to perform some initial setup steps before you can develop your action.
+### Advanced Usage
 
-> [!NOTE]
->
-> You'll need to have a reasonably modern version of
-> [Node.js](https://nodejs.org) handy (20.x or later should work!). If you are
-> using a version manager like [`nodenv`](https://github.com/nodenv/nodenv) or
-> [`fnm`](https://github.com/Schniz/fnm), this template has a `.node-version`
-> file at the root of the repository that can be used to automatically switch to
-> the correct version when you `cd` into the repository. Additionally, this
-> `.node-version` file is used by GitHub Actions in any `actions/setup-node`
-> actions.
+```yaml
+steps:
+  - name: Setup GitHub CLI
+    uses: v2d27/setup-gh-cli@v1
+    with:
+      version: '2.40.1' # Optional: specify version (default: latest)
+      platform: 'linux' # Optional: linux, macOS, windows (default: auto-detect)
+      architecture: 'arm64' # Optional: amd64, arm64, 386 (default: amd64)
+      archive_format: 'tar.gz' # Optional: tar.gz, zip (default: auto-detect)
+```
 
-1. :hammer_and_wrench: Install the dependencies
+### Cross-platform Example
 
-   ```bash
-   npm install
-   ```
+```yaml
+name: Cross-platform GitHub CLI Setup
+on: [push, pull_request]
+
+jobs:
+  test:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        architecture: [amd64, arm64]
+        exclude:
+          # macOS doesn't support 386 architecture
+          - os: macos-latest
+            architecture: 386
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup GitHub CLI
+        uses: v2d27/setup-gh-cli@v1
+        with:
+          architecture: ${{ matrix.architecture }}
+
+      - name: Verify Installation
+        run: gh --version
+```
+
+## Inputs
+
+| Input            | Description                                         | Required | Default                         |
+| ---------------- | --------------------------------------------------- | -------- | ------------------------------- |
+| `version`        | Version of GitHub CLI to install (without v prefix) | No       | `latest`                        |
+| `platform`       | Platform to install for (linux, macOS, windows)     | No       | Auto-detected                   |
+| `architecture`   | Architecture to install for (amd64, arm64, 386)     | No       | `amd64`                         |
+| `archive_format` | Archive format (tar.gz, zip)                        | No       | Auto-detected based on platform |
+
+## Outputs
+
+| Output    | Description                                  |
+| --------- | -------------------------------------------- |
+| `version` | The version of GitHub CLI that was installed |
+
+## Examples
+
+### Install Latest Version
+
+```yaml
+- name: Setup GitHub CLI (Latest)
+  uses: v2d27/setup-gh-cli@v1
+```
+
+### Install Specific Version
+
+```yaml
+- name: Setup GitHub CLI (Specific Version)
+  uses: v2d27/setup-gh-cli@v1
+  with:
+    version: '2.35.0'
+```
+
+### Install for ARM64 Architecture
+
+```yaml
+- name: Setup GitHub CLI (ARM64)
+  uses: v2d27/setup-gh-cli@v1
+  with:
+    architecture: 'arm64'
+```
+
+### Install for Windows with Custom Archive Format
+
+```yaml
+- name: Setup GitHub CLI (Windows)
+  uses: v2d27/setup-gh-cli@v1
+  with:
+    platform: 'windows'
+    architecture: 'amd64'
+    archive_format: 'zip'
+```
+
+```bash
+npm install
+```
 
 1. :building_construction: Package the TypeScript for distribution
 
@@ -303,3 +390,54 @@ To check the status of cached licenses, run the following command:
 ```bash
 licensed status
 ```
+
+## Development
+
+### Building
+
+To build the action and generate the distribution files:
+
+```bash
+npm run bundle
+```
+
+This will:
+
+1. Format the code with Prettier
+2. Compile TypeScript to JavaScript
+3. Bundle everything into `dist/index.js`
+
+### Testing
+
+Run the test suite:
+
+```bash
+npm test
+```
+
+### Linting
+
+Run ESLint to check for code issues:
+
+```bash
+npm run lint
+```
+
+### Environment Setup
+
+1. Install dependencies:
+
+   ```bash
+   npm install
+   ```
+
+2. Make sure you have Node.js 20.x or later installed
+
+### Project Structure
+
+- `src/` - TypeScript source code
+  - `main.ts` - Main action logic with multi-platform support
+  - `index.ts` - Entry point
+- `__tests__/` - Unit tests
+- `dist/` - Generated JavaScript (do not edit manually)
+- `action.yml` - Action metadata and input/output definitions
