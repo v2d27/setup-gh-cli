@@ -26,6 +26,8 @@ async function install(): Promise<void> {
   let cliPath = find(GH_CLI_TOOL_NAME, pkg.version)
   if (cliPath) {
     core.info(`Found existing GitHub CLI at ${cliPath}`)
+    core.addPath(cliPath)
+    core.setOutput('version', pkg.version)
     return
   }
 
