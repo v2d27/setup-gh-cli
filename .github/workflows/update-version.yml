@@ -34,7 +34,7 @@ jobs:
 
           echo "Bumping version to $NEW_VERSION"  
           sed -i -E "s/@v[0-9.]+/@${NEW_VERSION}/g" README.md
-          
+
       - name: Commit changes
         run: |
           git config user.name "GitHub Actions"

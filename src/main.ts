@@ -28,6 +28,7 @@ async function install(): Promise<void> {
     core.info(`Found existing GitHub CLI at ${cliPath}`)
     core.addPath(cliPath)
     core.setOutput('version', pkg.version)
+    core.info(`Added already gh to PATH`)
     return
   }
 

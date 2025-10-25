@@ -29922,6 +29922,9 @@ async function install() {
     let cliPath = toolCacheExports.find(GH_CLI_TOOL_NAME, pkg.version);
     if (cliPath) {
         coreExports.info(`Found existing GitHub CLI at ${cliPath}`);
+        coreExports.addPath(cliPath);
+        coreExports.setOutput('version', pkg.version);
+        coreExports.info(`Added already gh to PATH`);
         return;
     }
     const downloadPath = await toolCacheExports.downloadTool(pkg.packageUrl, `gh_${pkg.platform}_${pkg.architecture}`);

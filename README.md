@@ -95,4 +95,5 @@ npm run lint
 
 ### Contributing
 
-Please make pull request to this source code at: [https://github.com/v2d27/setup-gh-cli](https://github.com/v2d27/setup-gh-cli)
+Please make pull request to this source code at:
+[https://github.com/v2d27/setup-gh-cli](https://github.com/v2d27/setup-gh-cli)
